@@ -1,6 +1,5 @@
-// src/components/LeftPanel.js
 import React, { useState } from 'react';
-import { supabase } from '../supabaseClient'; // NEW: Import the Supabase client
+import { supabase } from '../supabaseClient';
 import DummyLogo from './DummyLogo';
 
 const LeftPanel = ({ authState, setAuthState }) => {
@@ -12,94 +11,100 @@ const LeftPanel = ({ authState, setAuthState }) => {
     password: '',
     rePassword: '',
   });
-  const [passwordError, setPasswordError] = useState('');
-  const [loading, setLoading] = useState(false); // NEW: Add loading state for buttons
 
-  // ... (handleInputChange is the same)
+  const [loading, setLoading] = useState(false);
+  const [authError, setAuthError] = useState(''); // For login and signup errors
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevState => ({ ...prevState, [name]: value }));
   };
 
-  // NEW: Function to handle Google Sign-In
   async function signInWithGoogle() {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-    });
+    setAuthError('');
+    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
     if (error) {
-      alert(error.message);
+      setAuthError(error.message);
       setLoading(false);
     }
   }
 
-  // UPDATED: Function to handle Email/Password Sign-Up
   const handleRegister = async (e) => {
     e.preventDefault();
-    setPasswordError('');
+    setAuthError('');
 
     if (formData.password !== formData.rePassword) {
-      setPasswordError('Passwords do not match.');
+      setAuthError('Passwords do not match.');
       return;
     }
     
     setLoading(true);
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
-      options: {
-        // You can store extra data here in the user's metadata
-        data: {
-          name: formData.name,
-          gender: formData.gender,
-          age: formData.age,
-        }
-      }
+      options: { data: { name: formData.name, gender: formData.gender, age: formData.age } }
     });
 
     if (error) {
-      alert(error.message);
+      setAuthError(error.message);
     } else {
-      // If sign up is successful, Supabase sends a confirmation email.
-      // We can switch the view to the confirmation message.
       setAuthState('confirmation');
     }
     setLoading(false);
   };
 
-  // ... (handleLogin can be updated later if needed)
-  const handleLogin = (e) => { e.preventDefault(); };
+  // NEW: Function to handle Email/Password Sign-In
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setAuthError('');
+    
+    const { error } = await supabase.auth.signInWithPassword({
+      email: formData.email,
+      password: formData.password,
+    });
 
-  // ... (The renderContent function is mostly the same, just adding the onClick and disabled states)
+    if (error) {
+      setAuthError(error.message);
+    }
+    // Note: On success, the onAuthStateChange listener in App.js will handle the session
+    // and automatically switch to the dashboard. We don't need to do anything else here.
+    setLoading(false);
+  };
+
+
   const renderContent = () => {
     switch (authState) {
       case 'register':
         return (
           <>
-            <div className="mb-10 text-center">
+            <div className="mb-6 text-center"> {/* Adjusted margin */}
               <h1 className="font-serif text-4xl md:text-5xl text-brand-text mb-2">
                 Begin. <br /> Belong.
               </h1>
               <p className="text-base text-brand-text">The AI for creative explorers</p>
             </div>
             
+            {/* NEW: Login Link */}
+            <p className="text-sm text-center text-brand-muted mb-4">
+              Already have an account?{' '}
+              <button onClick={() => setAuthState('login')} className="font-semibold text-blue-600 hover:underline">
+                Login here
+              </button>
+            </p>
+
             <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl w-full max-w-md">
-              {/* UPDATED: Added onClick and disabled props */}
-              <button 
-                onClick={signInWithGoogle} 
-                disabled={loading}
-                className="w-full flex items-center justify-center py-2.5 px-4 border border-gray-300 rounded-lg text-brand-text font-semibold hover:bg-gray-50 transition-colors mb-4 disabled:opacity-50"
-              >
+              <button onClick={signInWithGoogle} disabled={loading} className="w-full flex items-center justify-center py-2.5 px-4 border border-gray-300 rounded-lg text-brand-text font-semibold hover:bg-gray-50 transition-colors mb-4 disabled:opacity-50">
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5 mr-3" />
                 Continue with Google
               </button>
               <div className="text-center text-gray-400 my-3">OR</div>
               <form onSubmit={handleRegister}>
-                {/* ... (all your input fields are the same) ... */}
                 <input type="text" name="name" placeholder="Enter your name" onChange={handleInputChange} className="w-full p-3 mb-3 border border-gray-300 rounded-lg" required />
-                <div className="grid grid-cols-2 gap-3 mb-3" >
+                <div className="grid grid-cols-2 gap-3 mb-3">
                     <select name="gender" onChange={handleInputChange} className="w-full p-3 border border-gray-300 rounded-lg" required>
-                        <option value="male">Gender</option>
+                        <option value="">Gender</option>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
                         <option value="other">Other</option>
@@ -110,9 +115,8 @@ const LeftPanel = ({ authState, setAuthState }) => {
                 <input type="password" name="password" placeholder="Password" onChange={handleInputChange} className="w-full p-3 mb-3 border border-gray-300 rounded-lg" required />
                 <input type="password" name="rePassword" placeholder="Re-enter password" onChange={handleInputChange} className="w-full p-3 mb-3 border border-gray-300 rounded-lg" required />
                 
-                {passwordError && <p className="text-red-500 text-sm mb-3">{passwordError}</p>}
+                {authError && <p className="text-red-500 text-sm mb-3">{authError}</p>}
                 
-                {/* UPDATED: Added disabled prop */}
                 <button type="submit" disabled={loading} className="w-full bg-brand-primary text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors mt-1 disabled:opacity-50">
                   {loading ? 'Creating...' : 'Create Account'}
                 </button>
@@ -120,22 +124,58 @@ const LeftPanel = ({ authState, setAuthState }) => {
             </div>
           </>
         );
-      // ... other cases are unchanged ...
+
+      // UPDATED: The full login form UI
+      case 'login':
+        return (
+          <>
+            <div className="mb-10 text-center">
+              <h1 className="font-serif text-4xl md:text-5xl text-brand-text mb-2">
+                Welcome<br />Back.
+              </h1>
+              <p className="text-base text-brand-text">Log in to continue your journey.</p>
+            </div>
+            
+            <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+                 <button onClick={signInWithGoogle} disabled={loading} className="w-full flex items-center justify-center py-2.5 px-4 border border-gray-300 rounded-lg text-brand-text font-semibold hover:bg-gray-50 transition-colors mb-4 disabled:opacity-50">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5 mr-3" />
+                    Continue with Google
+                </button>
+                <div className="text-center text-gray-400 my-4">OR</div>
+                <form onSubmit={handleLogin}>
+                    <input type="email" name="email" placeholder="Enter your email" onChange={handleInputChange} className="w-full p-3 mb-4 border border-gray-300 rounded-lg" required />
+                    <input type="password" name="password" placeholder="Enter your password" onChange={handleInputChange} className="w-full p-3 mb-4 border border-gray-300 rounded-lg" required />
+                    
+                    {authError && <p className="text-red-500 text-sm mb-3">{authError}</p>}
+
+                    <button type="submit" disabled={loading} className="w-full bg-brand-primary text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors">
+                        {loading ? 'Logging in...' : 'Continue with email'}
+                    </button>
+                </form>
+                <p className="text-sm text-center text-brand-muted mt-6">
+                  Don't have an account?{' '}
+                  <button onClick={() => setAuthState('register')} className="font-semibold text-blue-600 hover:underline">
+                    Register here
+                  </button>
+                </p>
+            </div>
+          </>
+        );
+
       case 'confirmation':
+        // ... (no changes needed here)
         return (
           <div className="text-center w-full max-w-md">
             <h2 className="font-serif text-4xl mb-4">Check Your Inbox</h2>
             <p className="text-lg text-brand-muted mb-6">A confirmation link has been sent to your email.</p>
             <button
-              onClick={() => setAuthState('login')} // You might want to build out the login page next
+              onClick={() => setAuthState('login')}
               className="text-blue-600 hover:underline font-semibold"
             >
               Proceed to Login Page
             </button>
           </div>
         );
-      case 'login':
-        return ( <div>Login Form Here...</div> ) // Placeholder for your login UI
       default:
         return null;
     }
