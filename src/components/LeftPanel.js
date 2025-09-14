@@ -53,8 +53,7 @@ const LeftPanel = ({ authState, setAuthState }) => {
     }
     setLoading(false);
   };
-
-  // NEW: Function to handle Email/Password Sign-In
+  
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -125,7 +124,6 @@ const LeftPanel = ({ authState, setAuthState }) => {
           </>
         );
 
-      // UPDATED: The full login form UI
       case 'login':
         return (
           <>

@@ -15,6 +15,8 @@ module.exports = {
       fontFamily: {
         serif: ['Georgia', 'serif'],
         sans: ['Inter', 'sans-serif'],
+        grenze: ['"Grenze Gotisch"', 'serif'],
+        goldman: ['Goldman', 'sans-serif'],
       },
     },
   },
