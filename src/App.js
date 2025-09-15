@@ -5,6 +5,8 @@ import LeftPanel from './components/LeftPanel';
 import DemoPanel from './components/DemoPanel';
 import Onboarding from './components/Onboarding';
 import Dashboard from './components/Dashboard';
+import Wave from './components/Wave';
+
 
 function App() {
   const [session, setSession] = useState(null);
@@ -59,16 +61,17 @@ function App() {
   
   if (!session) {
     return (
-      <div className="container mx-auto grid grid-cols-1 lg:grid-cols-2 min-h-screen">
-        <div className="flex items-center justify-center p-4">
+      <div className="flex flex-col lg:flex-row h-screen overflow-hidden bg-white font-poppins">
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-4">
           <LeftPanel authState={authState} setAuthState={setAuthState} />
         </div>
-        <div className="hidden lg:flex items-center justify-center bg-brand-secondary p-8">
+        <div className="hidden lg:flex w-1/2 relative">
           <DemoPanel />
+          <Wave />
         </div>
       </div>
     );
-  } else if (profile && !profile.onboarded) {
+  }  else if (profile && !profile.onboarded) {
     return <Onboarding onNext={handleOnboardingComplete} />;
   } else {
     return <Dashboard session={session} />;

@@ -1,16 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
-  ],
+  content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        'brand-background': '#FBF9F6',
-        'brand-text': '#333333',
-        'brand-primary': '#1A1A1A',
-        'brand-secondary': '#EFEBE6',
-        'brand-muted': '#808080',
+        'arelia-yellow': '#FFD200', 
+        'arelia-gold': '#FDB813',
+        'arelia-dark': '#2D3748',   
+        'arelia-subtle': '#FFFBEB', 
       },
       fontFamily: {
         serif: ['Georgia', 'serif'],
@@ -21,6 +18,8 @@ module.exports = {
       animation: {
         'fade-in': 'fadeIn 1s ease-out forwards',
         'pulse-slow': 'pulse-slow 2s infinite',
+        'wave-slow': 'wave 30s linear infinite',
+        'wave-fast': 'wave 20s linear infinite reverse',
       },
       keyframes: {
         fadeIn: {
@@ -30,6 +29,10 @@ module.exports = {
         'pulse-slow': {
             '0%, 100%': { transform: 'scale(1)' },
             '50%': { transform: 'scale(1.05)' },
+        },
+        wave: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
         },
       }
     },
