@@ -32,7 +32,7 @@ function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       if (session) {
-        setLoading(true);
+        setLoading(false);
         const { data } = await supabase.from('profiles').select('onboarded').eq('id', session.user.id).single();
         setProfile(data);
         setLoading(false);
@@ -45,7 +45,7 @@ function App() {
   }, []);
 
   const handleOnboardingComplete = async () => {
-    setLoading(true);
+    setLoading(false);
     const { error } = await supabase.from('profiles').update({ onboarded: true }).eq('id', session.user.id);
     if (error) {
       alert(error.message);
